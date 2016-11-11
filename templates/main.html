@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="head-text sub-work col-md-12">
+            <h2>Latest Posts</h2>
+            {% if deleted_post_id %}
+                <div class="alert alert-success">Post deleted successully</div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% for p in posts %}
+        {% if p.key().id()|string != deleted_post_id|string %}
+        <div class="row">
+            {{ p.render() | safe }}
+        </div>
+        {% endif %}
+    {% endfor %}
+
+{% endblock %}

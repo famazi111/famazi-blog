@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi User Blog</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Satisy" rel="stylesheet">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style type="text/css">
+    .title-options{
+        text-align: right;
+    }
+    .login-options{
+        position: relative;
+    }
+    body{
+        font-family: 'Satisfy', cursive;
+        font-size: 200%;
+    }
+    .post-body{
+        margin: 20px;
+        border: 1px solid grey;
+    }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="portfolio-header">
+            <div class="row">
+                <div class="col-md-4">
+                    <a href="/"><h1>Multi-User-Blog<h1></a>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="title-options col-md-4">
+                    {% if user %}
+                        <h1>{{user.name}}</h1>
+                        <p>
+                            <a class="btn btn-primary" href="/blog/newpost">New Post</a>
+                            <a class="btn btn-danger" href="/logout">Logout</a>
+                        </p>
+                    {% else %}
+                      <p class="login-options">
+                        <a id="login-btn" class="btn btn-primary" href="/login">Login</a>
+                      </p>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+        <section id="content">
+              {% block content %}
+              {% endblock %}
+        </section>
+    </div>
+</body>
+</html>

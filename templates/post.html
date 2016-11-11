@@ -1,0 +1,14 @@
+<div class="post-body col-md-12">
+
+    <div class="row">
+        <div class="col-md-7">
+            <h2 class="post-heading">
+                <a href="/blog/{{p.key().id()}}#" class="post-title">{{p.subject}}</a>
+            </h2>
+        </div>
+    </div>
+
+    <small class="post-date">Posted by {{p.getUserName()}} on {{p.created.strftime("%b %d, %Y")}}</small>
+
+    <p class="post-content">{{p._render_text | safe}}</p>
+</div>
