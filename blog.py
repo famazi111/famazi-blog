@@ -187,15 +187,16 @@ class PostPage(Handler):
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
         post = db.get(key)
 
+        if not post:
+            self.error(404)
+            return
+
         comments = db.GqlQuery("select * from Comment where post_id = " +
                                post_id +
                                " order by created desc")
 
         likes = db.GqlQuery("select * from Like where post_id=" + post_id)
 
-        if not post:
-            self.error(404)
-            return
 
         error = self.request.get('error')
 
@@ -285,6 +286,11 @@ class DeletePost(Handler):
         if self.user:
             key = db.Key.from_path('Post', int(post_id), parent=blog_key())
             post = db.get(key)
+            if not post:
+                self.error(404)
+                return
+
+
             if post.user_id == self.user.key().id():
                 post.delete()
                 self.redirect("/?deleted_post_id=" + post_id)
@@ -303,6 +309,10 @@ class EditPost(Handler):
         if self.user:
             key = db.Key.from_path('Post', int(post_id), parent=blog_key())
             post = db.get(key)
+            if not post:
+                self.error(404)
+                return
+
             if post.user_id == self.user.key().id():
                 self.render("editpost.html", subject=post.subject,
                             content=post.content)
@@ -313,23 +323,30 @@ class EditPost(Handler):
             self.redirect("/login?error=Please login in to edit the post")
 
     def post(self, post_id):
-        if not self.user:
+        if self.user:
             return self.redirect('/blog')
 
-        subject = self.request.get('subject')
-        content = self.request.get('content')
-        """check for subject and content"""
-        if subject and content:
-            key = db.Key.from_path('Post', int(post_id), parent=blog_key())
-            post = db.get(key)
-            post.subject = subject
-            post.content = content
-            post.put()
-            self.redirect('/blog/%s' % post_id)
+        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+        post = db.get(key)
+        if not post:
+            self.error(404)
+
+        if post.user_id == self.user.key().id():
+            subject = self.request.get('subject')
+            content = self.request.get('content')
+            """check for subject and content"""
+            if subject and content:
+                post.subject = subject
+                post.content = content
+                post.put()
+                self.redirect('/blog/%s' % post_id)
+            else:
+                error = "subject and content, please!"
+                self.render("editpost.html", subject=subject,
+                            content=content, error=error)
         else:
-            error = "subject and content, please!"
-            self.render("editpost.html", subject=subject,
-                        content=content, error=error)
+            self.redirect("/blog/" + post_id + "?error=No proper access" +
+                          " to edit this post")
 
 
 class DeleteComment(Handler):
@@ -340,6 +357,11 @@ class DeleteComment(Handler):
             key = db.Key.from_path('Comment', int(comment_id),
                                    parent=blog_key())
             c = db.get(key)
+            if not c:
+                self.redirect("/blog/" + post_id +
+                              "?error=Comment not found")
+                return
+
             if c.user_id == self.user.key().id():
                 c.delete()
                 self.redirect("/blog/" + post_id + "?deleted_comment_id=" +
@@ -360,6 +382,10 @@ class EditComment(Handler):
             key = db.Key.from_path('Comment', int(comment_id),
                                    parent=blog_key())
             c = db.get(key)
+            if not c:
+                self.redirect("/blog/" + post_id +
+                              "?error=Comment not found")
+
             if c.user_id == self.user.key().id():
                 self.render("editcomment.html", comment=c.comment)
             else:
@@ -382,9 +408,14 @@ class EditComment(Handler):
             key = db.Key.from_path('Comment',
                                    int(comment_id), parent=blog_key())
             c = db.get(key)
-            c.comment = comment
-            c.put()
-            self.redirect('/blog/%s' % post_id)
+            if c.user_id == self.user.key().id():
+                c.comment = comment
+                c.put()
+                self.redirect('/blog/%s' % post_id)
+            else:
+                error = "No proper access to edit this comment"
+                self.render("editpost.html", subject=subject,
+                        content=content, error=error)
         else:
             error = "subject and content, please!"
             self.render("editpost.html", subject=subject,
