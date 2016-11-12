@@ -199,7 +199,7 @@ class PostPage(Handler):
 
         error = self.request.get('error')
 
-        return self.render("postpage.html", post=post, NumLikes=likes.count(),
+        self.render("postpage.html", post=post, NumLikes=likes.count(),
                            comments=comments, error=error)
 
     def post(self, post_id):
@@ -210,7 +210,7 @@ class PostPage(Handler):
             self.error(404)
             return
 
-        comment = ""
+        c = ""
         if(self.user):
 
             """On clicking like, post-like value increases."""
@@ -234,10 +234,10 @@ class PostPage(Handler):
             """On commenting, it creates new comment tuple"""
 
             if(self.request.get('comment')):
-                comment = Comment(parent=blog_key(), user_id=self.user.key().id(),
+                c = Comment(parent=blog_key(), user_id=self.user.key().id(),
                                   post_id=int(post_id),
                                   comment=self.request.get('comment'))
-                comment.put()
+                c.put()
         else:
             self.redirect("/login?error=Please login")
             return
