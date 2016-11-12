@@ -8,7 +8,7 @@
         </div>
     </div>
 
-    <small class="post-date">Posted by {{p.getUserName()}} on {{p.created.strftime("%b %d, %Y")}}</small>
+    <small class="post-date">Posted by {{p.get_user_name()}} on {{p.created.strftime("%b %d, %Y")}}</small>
 
     <p class="post-content">{{p._render_text | safe}}</p>
 </div>

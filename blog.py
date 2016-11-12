@@ -22,10 +22,11 @@ def check_secure_val(secure_val):
     if secure_val == make_secure_val(val):
         return val
 
-# Main Handler
-
 
 class Handler(webapp2.RequestHandler):
+    """
+        Main Handler
+    """
 
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
@@ -73,27 +74,26 @@ class Main(Handler):
 
 # More Helper functions
 
-USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-
 
 def valid_username(username):
+    USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
     return username and USER_RE.match(username)
-
-PASS_RE = re.compile(r"^.{3,20}$")
 
 
 def valid_password(password):
+    PASS_RE = re.compile(r"^.{3,20}$")
     return password and PASS_RE.match(password)
-
-EMAIL_RE = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
 
 
 def valid_email(email):
+    EMAIL_RE = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
     return not email or EMAIL_RE.match(email)
 
 
-# Sign up page which validates and register the user
 class Signup(Handler):
+    """
+    Sign up page which validates and register the user
+    """
 
     def get(self):
         self.render("signup.html")
@@ -104,14 +104,14 @@ class Signup(Handler):
         self.password = self.request.get('password')
         self.verify = self.request.get('verify')
         self.email = self.request.get('email')
-
-        # storing parameters
-
+        """
+        storing parameters
+        """
         params = dict(username=self.username,
                       email=self.email)
-
-        # validation checks
-
+        """
+        check for valid username, password and email
+        """
         if not valid_username(self.username):
             params['error_username'] = "Not a valid username"
             have_error = True
@@ -139,8 +139,7 @@ class Signup(Handler):
 class Register(Signup):
 
     def done(self):
-
-        # Makes sure the user doesn't already exist
+        """Makes sure the user doesn't already exist"""
 
         u = User.by_name(self.username)
         if u:
@@ -154,8 +153,8 @@ class Register(Signup):
             self.redirect('/')
 
 
-# User login details validation
 class Login(Handler):
+    """User login details validation"""
 
     def get(self):
         self.render('login.html', error=self.request.get('error'))
@@ -173,16 +172,16 @@ class Login(Handler):
             self.render('login.html', error=msg)
 
 
-# Clears the cookies and safely get backs to default Main page
 class Logout(Handler):
+    """Clears the cookies and safely get backs to default Main page"""
 
     def get(self):
         self.logout()
         self.redirect('/')
 
 
-# Routes back to post page
 class PostPage(Handler):
+    """Routes back to post page"""
 
     def get(self, post_id):
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
@@ -200,8 +199,8 @@ class PostPage(Handler):
 
         error = self.request.get('error')
 
-        self.render("postpage.html", post=post, NumLikes=likes.count(),
-                    comments=comments, error=error)
+        return self.render("postpage.html", post=post, NumLikes=likes.count(),
+                           comments=comments, error=error)
 
     def post(self, post_id):
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
@@ -211,10 +210,10 @@ class PostPage(Handler):
             self.error(404)
             return
 
-        c = ""
+        comment = ""
         if(self.user):
 
-            # On clicking like, post-like value increases.
+            """On clicking like, post-like value increases."""
 
             if(self.request.get('like') and
                self.request.get('like') == "update"):
@@ -232,13 +231,13 @@ class PostPage(Handler):
                              post_id=int(post_id))
                     l.put()
 
-            # On commenting, it creates new comment tuple
+            """On commenting, it creates new comment tuple"""
 
             if(self.request.get('comment')):
-                c = Comment(parent=blog_key(), user_id=self.user.key().id(),
-                            post_id=int(post_id),
-                            comment=self.request.get('comment'))
-                c.put()
+                comment = Comment(parent=blog_key(), user_id=self.user.key().id(),
+                                  post_id=int(post_id),
+                                  comment=self.request.get('comment'))
+                comment.put()
         else:
             self.redirect("/login?error=Please login")
             return
@@ -252,8 +251,8 @@ class PostPage(Handler):
                     comments=comments)
 
 
-# New Post Page is rendered
 class NewPost(Handler):
+    """New Post Page is rendered"""
 
     def get(self):
         if self.user:
@@ -263,11 +262,11 @@ class NewPost(Handler):
 
     def post(self):
         if not self.user:
-            self.redirect('/blog')
+            return self.redirect('/blog')
 
         subject = self.request.get('subject')
         content = self.request.get('content')
-
+        """check for subject and content"""
         if subject and content:
             p = Post(parent=blog_key(), user_id=self.user.key().id(),
                      subject=subject, content=content)
@@ -279,8 +278,8 @@ class NewPost(Handler):
                         content=content, error=error)
 
 
-# Deletes the current post
 class DeletePost(Handler):
+    """Deletes the current post"""
 
     def get(self, post_id):
         if self.user:
@@ -297,8 +296,8 @@ class DeletePost(Handler):
                           " to delete your post!!")
 
 
-# Edits the current post
 class EditPost(Handler):
+    """Edits the current post if logged in and is the post owner"""
 
     def get(self, post_id):
         if self.user:
@@ -315,11 +314,11 @@ class EditPost(Handler):
 
     def post(self, post_id):
         if not self.user:
-            self.redirect('/blog')
+            return self.redirect('/blog')
 
         subject = self.request.get('subject')
         content = self.request.get('content')
-
+        """check for subject and content"""
         if subject and content:
             key = db.Key.from_path('Post', int(post_id), parent=blog_key())
             post = db.get(key)
@@ -333,8 +332,8 @@ class EditPost(Handler):
                         content=content, error=error)
 
 
-# Deletes the comment of the current user
 class DeleteComment(Handler):
+    """Deletes the comment of the current user"""
 
     def get(self, post_id, comment_id):
         if self.user:
@@ -353,8 +352,8 @@ class DeleteComment(Handler):
             self.redirect("/login?error=Please login in to delete the comment")
 
 
-# Edits the comment of current user
 class EditComment(Handler):
+    """Edits the comment of current user"""
 
     def get(self, post_id, comment_id):
         if self.user:
@@ -375,7 +374,7 @@ class EditComment(Handler):
             Updates post.
         """
         if not self.user:
-            self.redirect('/blog')
+            return self.redirect('/blog')
 
         comment = self.request.get('comment')
 

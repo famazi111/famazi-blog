@@ -41,7 +41,7 @@
                 <a class="comment-delete btn btn-danger pull-right" href="/blog/deletecomment/{{post.key().id()}}/{{c.key().id()}}">Delete</a>
                 <a class="comment-edit btn btn-primary pull-right" href="/blog/editcomment/{{post.key().id()}}/{{c.key().id()}}">Edit</a>
                 <p>{{ c.comment }}</p>
-                <footer>{{ c.getUserName() }}</footer>
+                <footer>{{ c.get_user_name() }}</footer>
             </blockquote>
             {% endfor %}
         </div>
